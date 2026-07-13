@@ -1,5 +1,10 @@
+import logging
+
 from langchain_google_genai import ChatGoogleGenerativeAI
+
 from app.core.config import GEMINI_API_KEY
+
+logger = logging.getLogger(__name__)
 
 MODELS = [
     "gemini-3.5-flash",
@@ -14,6 +19,8 @@ def ask_gemini(question: str) -> str:
 
     for model in MODELS:
         try:
+            logger.info("Trying Gemini model: %s", model)
+
             llm = ChatGoogleGenerativeAI(
                 model=model,
                 google_api_key=GEMINI_API_KEY,
@@ -21,10 +28,15 @@ def ask_gemini(question: str) -> str:
             )
 
             response = llm.invoke(question)
+
+            logger.info("Response generated using %s", model)
+
             return response.content
 
         except Exception as e:
-            print(f"[WARNING] {model} failed: {e}")
+            logger.warning("%s failed: %s", model, e)
             last_error = e
 
-    raise last_error
+    logger.error("All Gemini models failed")
+
+    raise RuntimeError("Unable to generate response from Gemini.") from last_error
