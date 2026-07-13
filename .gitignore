@@ -220,3 +220,10 @@ __marimo__/
 # RAG data sources
 data/
 backend/storage/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# HuggingFace cache (optional)
+.cache/

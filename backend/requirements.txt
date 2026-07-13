@@ -1,12 +1,19 @@
-fastapi
-uvicorn[standard]
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
 
-langchain
-langchain-community
-langchain-google-genai
+langchain==0.3.27
+langchain-community==0.3.27
+langchain-core==0.3.72
+langchain-text-splitters==0.3.9
 
-chromadb
+langchain-google-genai==2.1.8
+langchain-huggingface==0.3.1
 
-python-dotenv
+google-genai==1.31.0
 
-pydantic
+chromadb==1.0.15
+
+sentence-transformers==5.1.0
+
+python-dotenv==1.1.1
+pydantic==2.11.7
