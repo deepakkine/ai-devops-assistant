@@ -18,6 +18,7 @@ export default function ChatBox({ messages }) {
           key={index}
           role={message.role}
           text={message.text}
+          sources={message.sources}
         />
       ))}
 

@@ -13,20 +13,17 @@ def chat(request: ChatRequest):
 
     try:
 
-        answer = chat_service.chat(request.question)
+        response = chat_service.chat(
+            repository=request.repository,
+            question=request.question,
+            history=request.history,
+        )
 
-        return ChatResponse(answer=answer)
+        return ChatResponse(**response)
 
     except Exception as e:
 
         raise HTTPException(
             status_code=503,
             detail=str(e),
-        )
-    
-    except Exception:
-
-        raise HTTPException(
-            status_code=500,
-            detail="Internal Server Error",
         )

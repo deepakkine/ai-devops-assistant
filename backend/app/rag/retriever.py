@@ -5,14 +5,14 @@ from app.rag.embedding_service import EmbeddingService
 
 class Retriever:
 
-    def __init__(self):
+    def __init__(self, collection_name: str):
 
         self.client = PersistentClient(
             path="./storage/chromadb"
         )
 
         self.collection = self.client.get_collection(
-            "devops-repository"
+            collection_name
         )
 
         self.embedding_service = EmbeddingService()
@@ -23,16 +23,23 @@ class Retriever:
 
         results = self.collection.query(
             query_embeddings=[query_embedding],
-            n_results=k
+            n_results=k,
+            include=[
+                "documents",
+                "metadatas",
+                "distances",
+            ],
         )
 
         return [
             {
                 "content": document,
                 "metadata": metadata,
+                "distance": distance,
             }
-            for document, metadata in zip(
+            for document, metadata, distance in zip(
                 results["documents"][0],
-                results["metadatas"][0]
+                results["metadatas"][0],
+                results["distances"][0],
             )
         ]
