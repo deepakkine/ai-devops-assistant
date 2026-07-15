@@ -14,6 +14,7 @@ class Source(BaseModel):
 class ChatRequest(BaseModel):
     repository: str
     question: str
+    selected_file: str | None = None
     history: list[ChatMessage] = Field(default_factory=list)
 
 

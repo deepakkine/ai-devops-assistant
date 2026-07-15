@@ -1,6 +1,9 @@
 import shutil
 import subprocess
 from pathlib import Path
+
+from chromadb import PersistentClient
+
 from app.rag.document_loader import DocumentLoader
 from app.rag.text_splitter import TextSplitter
 from app.rag.vector_store import VectorStore
@@ -39,3 +42,23 @@ class RepositoryService:
         store.index_chunks(chunks)
 
         return repo_name
+
+    def delete(self, repository_name: str):
+
+        destination = self.DATA_DIR / repository_name
+
+        if destination.exists():
+            shutil.rmtree(destination)
+
+        client = PersistentClient(
+            path="./storage/chromadb"
+        )
+
+        try:
+            client.delete_collection(repository_name)
+        except Exception:
+            pass
+
+        return {
+            "message": "Repository deleted successfully."
+        }

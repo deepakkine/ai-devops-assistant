@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Enable class-based dark mode */
+@custom-variant dark (&:where(.dark, .dark *));
+
 html,
 body,
 #root {
@@ -9,7 +12,16 @@ body,
 
 body {
   margin: 0;
-  background: #0f172a;
-  color: white;
   font-family: Inter, system-ui, sans-serif;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+
+body {
+  @apply bg-white text-slate-900;
+}
+
+html.dark body {
+  @apply bg-slate-900 text-white;
 }

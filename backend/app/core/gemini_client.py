@@ -14,7 +14,7 @@ MODELS = [
 ]
 
 
-def ask_gemini(question: str) -> str:
+def stream_gemini(prompt: str):
     last_error = None
 
     for model in MODELS:
@@ -25,18 +25,25 @@ def ask_gemini(question: str) -> str:
                 model=model,
                 google_api_key=GEMINI_API_KEY,
                 temperature=0.2,
+                max_retries=0,
+                timeout=30,
             )
 
-            response = llm.invoke(question)
+            for chunk in llm.stream(prompt):
+                if chunk.content:
+                    yield chunk.content
 
-            logger.info("Response generated using %s", model)
-
-            return response.content
+            return
 
         except Exception as e:
             logger.warning("%s failed: %s", model, e)
             last_error = e
+            continue
 
-    logger.error("All Gemini models failed")
+    raise RuntimeError(
+        "Unable to generate response from Gemini."
+    ) from last_error
 
-    raise RuntimeError("Unable to generate response from Gemini.") from last_error
+
+def ask_gemini(prompt: str):
+    return "".join(stream_gemini(prompt))
