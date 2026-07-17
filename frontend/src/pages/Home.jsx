@@ -12,12 +12,19 @@ import {
   streamQuestion,
   getProjectOverview,
   getArchitecture,
+  getDependencyGraph,
+  getSecurityAnalysis,
+  getCodeReview,
+  getPerformanceAnalysis,
+  getDocumentation,
+  getRepositoryHealth,
 } from "../api/chat";
 
 import {
   getRepositories,
   importRepository,
   deleteRepository,
+  getRepositoryMap
 } from "../api/repository";
 
 import {
@@ -211,7 +218,10 @@ export default function Home() {
   }
 
   async function handleExplainFile() {
-    if (!selectedFile) return;
+    if (!selectedFile){
+      alert("Please select a file from the Repository Explorer first.");
+      return;
+    }
 
     await handleSend(`Explain "${selectedFile}" in detail.
 Include:
@@ -224,18 +234,60 @@ Include:
   }
 
   async function handleReviewFile() {
-    if (!selectedFile) return;
+    if (!selectedFile){
+      alert("Please select a file from the Repository Explorer first.");
+      return;
+    }
 
-    await handleSend(`Perform a professional code review of "${selectedFile}".
-Include:
-1. Code Quality
-2. Bugs
-3. Security
-4. Performance
-5. DevOps
-6. Maintainability
-7. Refactoring
-8. Rating /10`);
+    setLoading(true);
+
+    try {
+      const userMessage = {
+        role: "user",
+        text: `🔍 Code Review: ${selectedFile}`,
+      };
+
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === currentChat
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  userMessage,
+                ],
+              }
+            : chat
+        )
+      );
+
+      const response = await getCodeReview(
+        activeRepository,
+        selectedFile
+      );
+
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === currentChat
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  {
+                    role: "assistant",
+                    text: response.answer,
+                    sources: [],
+                  },
+                ],
+              }
+            : chat
+        )
+      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleProjectOverview() {
@@ -278,6 +330,246 @@ Include:
                   {
                     role: "assistant",
                     text: response.answer,
+                    sources: [],
+                  },
+                ],
+              }
+            : chat
+        )
+      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSecurityAnalysis() {
+    if (!activeRepository) return;
+
+    setLoading(true);
+
+    try {
+      const userMessage = {
+        role: "user",
+        text: "🔒 Security Analysis",
+      };
+
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === currentChat
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  userMessage,
+                ],
+              }
+            : chat
+        )
+      );
+
+      const response =
+        await getSecurityAnalysis(
+          activeRepository
+        );
+
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === currentChat
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  {
+                    role: "assistant",
+                    text: response.answer,
+                    sources: [],
+                  },
+                ],
+              }
+            : chat
+        )
+      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handlePerformanceAnalysis() {
+    if (!activeRepository) return;
+
+    setLoading(true);
+
+    try {
+      const userMessage = {
+        role: "user",
+        text: "⚡ Performance Analysis",
+      };
+
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === currentChat
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  userMessage,
+                ],
+              }
+            : chat
+        )
+      );
+
+      const response =
+        await getPerformanceAnalysis(
+          activeRepository
+        );
+
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === currentChat
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  {
+                    role: "assistant",
+                    text: response.answer,
+                    sources: [],
+                  },
+                ],
+              }
+            : chat
+        )
+      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleDocumentation() {
+    if (!activeRepository) return;
+
+    setLoading(true);
+
+    try {
+      const userMessage = {
+        role: "user",
+        text: "📖 Generate Documentation",
+      };
+
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === currentChat
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  userMessage,
+                ],
+              }
+            : chat
+        )
+      );
+
+      const response =
+        await getDocumentation(
+          activeRepository
+        );
+
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === currentChat
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  {
+                    role: "assistant",
+                    text: response.answer,
+                    sources: [],
+                  },
+                ],
+              }
+            : chat
+        )
+      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleRepositoryHealth() {
+    if (!activeRepository) return;
+
+    setLoading(true);
+
+    try {
+      const userMessage = {
+        role: "user",
+        text: "❤️ Repository Health",
+      };
+
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === currentChat
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  userMessage,
+                ],
+              }
+            : chat
+        )
+      );
+
+      const response = await getRepositoryHealth(
+        activeRepository
+      );
+
+      const message = `
+  # ❤️ Repository Health
+
+  ## Overall Score
+  **${response.overall_score}/10**
+
+  | Category | Score |
+  |----------|------:|
+  | Architecture | ${response.architecture}/10 |
+  | Security | ${response.security}/10 |
+  | Performance | ${response.performance}/10 |
+  | Code Quality | ${response.code_quality}/10 |
+  | Documentation | ${response.documentation}/10 |
+
+  ## Summary
+
+  ${response.summary}
+
+  ## Recommendations
+
+  ${response.recommendations
+    .map((r) => `- ${r}`)
+    .join("\n")}
+  `;
+
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === currentChat
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  {
+                    role: "assistant",
+                    text: message,
                     sources: [],
                   },
                 ],
@@ -343,6 +635,149 @@ Include:
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleRepositoryMap() {
+    if (!activeRepository) return;
+
+    setLoading(true);
+
+    try {
+      const userMessage = {
+        role: "user",
+        text: "🗺 Generate Repository Map",
+      };
+
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === currentChat
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  userMessage,
+                ],
+              }
+            : chat
+        )
+      );
+
+      const response =
+        await getRepositoryMap(
+          activeRepository
+        );
+
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === currentChat
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  {
+                    role: "assistant",
+                    text: response.answer,
+                    sources: [],
+                  },
+                ],
+              }
+            : chat
+        )
+      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleDependencyGraph() {
+    if (!activeRepository) return;
+
+    setLoading(true);
+
+    try {
+      const userMessage = {
+        role: "user",
+        text: "🔗 Generate Dependency Graph",
+      };
+
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === currentChat
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  userMessage,
+                ],
+              }
+            : chat
+        )
+      );
+
+      const response =
+        await getDependencyGraph(
+          activeRepository
+        );
+
+  const message =`${response.analysis}
+
+  \`\`\`mermaid
+  ${response.mermaid}
+  \`\`\``;
+
+  console.log("========== GENERATED GRAPH ==========");
+  console.log({ message });
+  console.log("========== END GENERATED GRAPH ==========");
+
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat.id === currentChat
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  {
+                    role: "assistant",
+                    text: message,
+                    sources: [],
+                  },
+                ],
+              }
+            : chat
+        )
+      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleWelcomePrompt(prompt) {
+    switch (prompt) {
+      case "Explain the selected file":
+        return handleExplainFile();
+
+      case "Review this code for bugs":
+        return handleReviewFile();
+
+      case "Find security vulnerabilities":
+        return handleSecurityAnalysis();
+
+      case "Explain the project architecture":
+        return handleArchitecture();
+
+      case "Summarize this repository":
+        return handleProjectOverview();
+
+      case "Suggest performance improvements":
+        return handlePerformanceAnalysis();
+
+      default:
+        return;
     }
   }
 
@@ -537,6 +972,42 @@ Include:
             </button>
             
             <button
+              onClick={handleRepositoryHealth}
+              disabled={!activeRepository || loading}
+              className="rounded-lg bg-pink-600 px-4 py-2 text-white hover:bg-pink-700 disabled:opacity-50"
+            >
+              ❤️ Repository Health
+            </button>
+            
+            <button
+              onClick={handleDocumentation}
+              disabled={!activeRepository || loading}
+              className="rounded-lg bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 disabled:opacity-50"
+            >
+              📖 Documentation
+            </button>
+
+            <button
+              onClick={handleRepositoryMap}
+              disabled={
+                !activeRepository || loading
+              }
+              className="rounded-lg bg-cyan-600 px-4 py-2 text-white hover:bg-cyan-700 disabled:opacity-50"
+            >
+              🗺 Repository Map
+            </button>
+
+            <button
+              onClick={handleDependencyGraph}
+              disabled={
+                !activeRepository || loading
+              }
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 disabled:opacity-50"
+            >
+              🔗 Dependency Graph
+            </button>
+
+            <button
               onClick={handleArchitecture}
               disabled={
                 !activeRepository || loading
@@ -585,6 +1056,7 @@ Include:
             <ChatBox
               messages={activeChat.messages}
               onSourceClick={handleSourceClick}
+              onPromptClick={handleWelcomePrompt}
             />
 
             <ChatInput

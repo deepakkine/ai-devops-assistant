@@ -61,7 +61,10 @@ class ChatService:
                 / selected_file
             )
 
-            if file_path.exists() and file_path.is_file():
+            if (
+                file_path.exists()
+                and file_path.is_file()
+            ):
                 try:
                     file_content = file_path.read_text(
                         encoding="utf-8",
@@ -128,117 +131,3 @@ Selected File:
         )
 
         return stream_gemini(prompt)
-
-    def project_overview(
-        self,
-        repository: str,
-    ):
-        retriever = Retriever(repository)
-
-        docs = retriever.retrieve_project_context()
-
-        context = "\n\n".join(
-            f"""
-File:
-{item["metadata"]["path"]}
-
-{item["content"]}
-"""
-            for item in docs
-        )
-
-        prompt = f"""
-You are an expert Software Architect and Senior DevOps Engineer.
-
-Analyze the repository below.
-
-Repository Context
-==================
-
-{context}
-
-Generate a professional repository overview.
-
-Include:
-
-# Executive Summary
-
-# Purpose
-
-# Tech Stack
-
-# Folder Structure
-
-# Main Components
-
-# Architecture
-
-# Data Flow
-
-# Security Observations
-
-# DevOps Observations
-
-# Improvements
-
-# Overall Rating (/10)
-"""
-
-        return ask_gemini(prompt)
-
-    def generate_architecture(
-        self,
-        repository: str,
-    ):
-        retriever = Retriever(repository)
-
-        docs = retriever.retrieve_project_context(
-            k=40,
-        )
-
-        context = "\n\n".join(
-            f"""
-File:
-{item["metadata"]["path"]}
-
-{item["content"]}
-"""
-            for item in docs
-        )
-
-        prompt = f"""
-You are a Principal Software Architect.
-
-Analyze the repository using ONLY the context below.
-
-Repository Context
-==================
-
-{context}
-
-Generate the following response.
-
-## Architecture
-
-Explain the architecture of the repository.
-
-## Mermaid
-
-Return ONLY ONE Mermaid diagram.
-
-Example Mermaid:
-
-graph TD
-User --> Frontend
-Frontend --> Backend
-Backend --> Database
-
-Rules:
-
-- Do not ask for the repository.
-- Do not say repository context is missing.
-- Do not invent technologies that are not present.
-- Base everything only on the repository context.
-"""
-
-        return ask_gemini(prompt)

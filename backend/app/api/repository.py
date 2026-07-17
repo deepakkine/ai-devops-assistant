@@ -5,11 +5,13 @@ from app.schemas.repository import (
     RepositoryImportRequest,
     RepositoryImportResponse,
 )
+from app.services.analysis_service import AnalysisService
 from app.services.repository_service import RepositoryService
 
 router = APIRouter(tags=["Repositories"])
 
 repository_service = RepositoryService()
+analysis_service = AnalysisService()
 
 
 @router.post(
@@ -17,9 +19,7 @@ repository_service = RepositoryService()
     response_model=RepositoryImportResponse,
 )
 def import_repository(request: RepositoryImportRequest):
-
     try:
-
         repo = repository_service.clone(
             request.github_url
         )
@@ -30,7 +30,6 @@ def import_repository(request: RepositoryImportRequest):
         )
 
     except Exception as e:
-
         raise HTTPException(
             status_code=500,
             detail=str(e),
@@ -39,7 +38,6 @@ def import_repository(request: RepositoryImportRequest):
 
 @router.get("/repositories")
 def list_repositories():
-
     client = PersistentClient(
         path="./storage/chromadb"
     )
@@ -52,17 +50,30 @@ def list_repositories():
     )
 
 
+@router.get("/repositories/{repository_name}/map")
+def repository_map(repository_name: str):
+    try:
+        return {
+            "answer": analysis_service.generate_repository_map(
+                repository_name
+            )
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e),
+        )
+
+
 @router.delete("/repositories/{repository_name}")
 def delete_repository(repository_name: str):
-
     try:
-
         return repository_service.delete(
             repository_name
         )
 
     except Exception as e:
-
         raise HTTPException(
             status_code=500,
             detail=str(e),

@@ -9,14 +9,33 @@ export async function getRepositories() {
   return response.data;
 }
 
-export async function importRepository(githubUrl) {
-  const response = await api.post("/repositories/import", {
-    github_url: githubUrl,
-  });
+export async function importRepository(
+  githubUrl
+) {
+  const response = await api.post(
+    "/repositories/import",
+    {
+      github_url: githubUrl,
+    }
+  );
 
   return response.data;
 }
 
-export async function deleteRepository(repository) {
-  await api.delete(`/repositories/${repository}`);
+export async function getRepositoryMap(
+  repository
+) {
+  const response = await api.get(
+    `/repositories/${repository}/map`
+  );
+
+  return response.data;
+}
+
+export async function deleteRepository(
+  repository
+) {
+  await api.delete(
+    `/repositories/${repository}`
+  );
 }

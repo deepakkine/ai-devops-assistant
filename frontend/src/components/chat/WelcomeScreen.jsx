@@ -1,4 +1,4 @@
-export default function WelcomeScreen() {
+export default function WelcomeScreen({ onPromptClick = () => {} }) {
   const prompts = [
     "Explain the selected file",
     "Review this code for bugs",
@@ -25,14 +25,16 @@ export default function WelcomeScreen() {
 
       <div className="grid w-full max-w-3xl gap-3 md:grid-cols-2">
         {prompts.map((prompt) => (
-          <div
+          <button
             key={prompt}
-            className="cursor-default rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
+            type="button"
+            onClick={() => onPromptClick(prompt)}
+            className="rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:shadow-md hover:border-violet-500 hover:bg-violet-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
           >
             <p className="font-medium text-slate-900 dark:text-white">
               {prompt}
             </p>
-          </div>
+          </button>
         ))}
       </div>
 

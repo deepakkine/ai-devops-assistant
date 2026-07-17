@@ -1,7 +1,10 @@
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import CodeBlock from "./CodeBlock";
+
+import { jsPDF } from "jspdf";
 
 export default function Message({
   role,
@@ -9,6 +12,57 @@ export default function Message({
   sources = [],
   onSourceClick,
 }) {
+
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    await navigator.clipboard.writeText(text);
+
+    setCopied(true);
+
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+}
+
+function handleDownload() {
+  const blob = new Blob([text], {
+    type: "text/markdown",
+  });
+
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+
+  a.href = url;
+  const fileName = `${role}-report-${new Date()
+    .toISOString()
+    .slice(0, 10)}.md`;
+
+  a.download = fileName;
+
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+function handlePDF() {
+  const pdf = new jsPDF();
+
+  const lines = pdf.splitTextToSize(
+    text,
+    180
+  );
+
+  pdf.text(lines, 10, 10);
+
+  const fileName = `${role}-report-${new Date()
+    .toISOString()
+    .slice(0, 10)}.pdf`;
+
+  pdf.save(fileName);
+}
+
   return (
     <div
       className={`mb-6 flex ${
@@ -27,40 +81,70 @@ export default function Message({
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
-            code(props) {
-              const {
-                inline,
-                className,
-                children,
-              } = props;
+            pre({ children }) {
+              return <>{children}</>;
+            },
 
-              const language =
-                className?.replace(
-                  "language-",
-                  ""
-                ) || "text";
+            code({
+              inline,
+              className,
+              children,
+              ...props
+            }) {
 
-              if (!inline) {
+              const match =
+                /language-(\w+)/.exec(className || "");
+
+              const language = match
+                ? match[1]
+                : "text";
+
+              const code = String(children).replace(/\n$/, "");
+
+              if (inline) {
                 return (
-                  <CodeBlock language={language}>
-                    {String(children).replace(
-                      /\n$/,
-                      ""
-                    )}
-                  </CodeBlock>
+                  <code {...props}>
+                    {children}
+                  </code>
                 );
               }
 
               return (
-                <code className="rounded bg-slate-200 px-1 py-0.5 text-pink-600 dark:bg-slate-900 dark:text-pink-400">
-                  {children}
-                </code>
+                <CodeBlock language={language}>
+                  {code}
+                </CodeBlock>
               );
-            },
+            }
           }}
         >
           {text}
         </ReactMarkdown>
+
+        {role === "assistant" && (
+          <div className="mt-4 flex justify-end gap-2">
+
+            <button
+              onClick={handleDownload}
+              className="rounded-lg bg-emerald-600 px-3 py-2 text-sm text-white hover:bg-emerald-700"
+            >
+              📄 Markdown
+            </button>
+
+            <button
+              onClick={handlePDF}
+              className="rounded-lg bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-700"
+            >
+              📕 PDF
+            </button>
+
+            <button
+              onClick={handleCopy}
+              className="rounded-lg bg-slate-700 px-3 py-2 text-sm text-white hover:bg-slate-800"
+            >
+              {copied ? "✅ Copied" : "📋 Copy"}
+            </button>
+          </div>
+        )}
 
         {role === "assistant" &&
           sources.length > 0 && (

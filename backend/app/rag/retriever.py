@@ -110,3 +110,32 @@ class Retriever:
                 break
 
         return docs
+    
+    def retrieve_file_context(
+        self,
+        file_path: str,
+    ):
+        results = self.collection.get(
+            where={
+                "path": file_path,
+            },
+            include=[
+                "documents",
+                "metadatas",
+            ],
+        )
+
+        docs = []
+
+        for document, metadata in zip(
+            results["documents"],
+            results["metadatas"],
+        ):
+            docs.append(
+                {
+                    "content": document,
+                    "metadata": metadata,
+                }
+            )
+
+        return docs

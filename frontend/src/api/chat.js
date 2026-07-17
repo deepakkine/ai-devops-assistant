@@ -93,3 +93,100 @@ export async function getArchitecture(
 
   return await response.json();
 }
+
+export async function getDependencyGraph(
+  repository
+) {
+  const response = await fetch(
+    `${API_URL}/chat/dependency-graph/${repository}`
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Failed to generate dependency graph"
+    );
+  }
+
+  return await response.json();
+}
+
+export async function getSecurityAnalysis(
+  repository
+) {
+  const response = await fetch(
+    `${API_URL}/chat/security-analysis/${repository}`
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Failed to generate security analysis"
+    );
+  }
+
+  return await response.json();
+}
+
+export async function getCodeReview(
+  repository,
+  filePath
+) {
+  const response = await fetch(
+    `${API_URL}/chat/code-review/${repository}/${encodeURIComponent(filePath)}`
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Failed to generate code review"
+    );
+  }
+
+  return await response.json();
+}
+
+export async function getPerformanceAnalysis(
+  repository
+) {
+  const response = await fetch(
+    `${API_URL}/chat/performance-analysis/${repository}`
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Failed to generate performance analysis"
+    );
+  }
+
+  return await response.json();
+}
+
+export async function getDocumentation(
+  repository
+) {
+  const response = await fetch(
+    `${API_URL}/chat/documentation/${repository}`
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Failed to generate documentation"
+    );
+  }
+
+  return await response.json();
+}
+
+export async function getRepositoryHealth(
+  repository
+) {
+  const response = await fetch(
+    `${API_URL}/chat/repository-health/${repository}`
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Failed to generate repository health"
+    );
+  }
+
+  return await response.json();
+}

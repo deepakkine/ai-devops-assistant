@@ -55,7 +55,9 @@ class RepositoryService:
         )
 
         try:
-            client.delete_collection(repository_name)
+            client.delete_collection(
+                repository_name
+            )
         except Exception:
             pass
 

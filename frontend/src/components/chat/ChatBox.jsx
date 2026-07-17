@@ -6,6 +6,7 @@ import WelcomeScreen from "./WelcomeScreen";
 export default function ChatBox({
   messages,
   onSourceClick,
+  onPromptClick,
 }) {
   const bottomRef = useRef(null);
 
@@ -16,7 +17,11 @@ export default function ChatBox({
   }, [messages]);
 
   if (messages.length === 0) {
-    return <WelcomeScreen />;
+    return (
+      <WelcomeScreen
+       onPromptClick={onPromptClick}
+      />
+    );
   }
 
   return (
