@@ -11,7 +11,14 @@ class EmbeddingService:
         )
 
     def embed_documents(self, texts):
-        return self.embedding_model.embed_documents(texts)
+        try:
+            return self.embedding_model.embed_documents(texts)
+        except Exception:
+            print("=" * 80)
+            print("EMBED DOCUMENTS FAILED")
+            traceback.print_exc()
+            print("=" * 80)
+            raise
 
     def embed_query(self, text):
         return self.embedding_model.embed_query(text)

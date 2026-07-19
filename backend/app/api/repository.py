@@ -18,7 +18,7 @@ analysis_service = AnalysisService()
     "/repositories/import",
     response_model=RepositoryImportResponse,
 )
-def import_repository(request: RepositoryImportRequest):
+async def import_repository(request: RepositoryImportRequest):
     try:
         repo = repository_service.clone(
             request.github_url
@@ -29,11 +29,12 @@ def import_repository(request: RepositoryImportRequest):
             repository_name=repo,
         )
 
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e),
-        )
+    except Exception:
+        print("=" * 80)
+        print("IMPORT ENDPOINT FAILED")
+        traceback.print_exc()
+        print("=" * 80)
+        raise
 
 
 @router.get("/repositories")
