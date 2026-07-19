@@ -21,7 +21,11 @@ class VectorStore:
 
         texts = [chunk["chunk"] for chunk in chunks]
 
+        print(f"Generating embeddings for {len(texts)} chunks...")
+
         embeddings = self.embedding_service.embed_documents(texts)
+
+        print(f"Generated {len(embeddings)} embeddings.")
 
         ids = []
         metadatas = []
@@ -37,12 +41,16 @@ class VectorStore:
                 }
             )
 
+        print("Writing embeddings to ChromaDB...")
+
         self.collection.add(
             ids=ids,
             documents=texts,
             embeddings=embeddings,
             metadatas=metadatas,
         )
+
+        print("Successfully indexed repository.")
 
     def count(self):
         return self.collection.count()

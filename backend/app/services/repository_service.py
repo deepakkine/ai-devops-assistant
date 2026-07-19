@@ -1,3 +1,4 @@
+import traceback
 import shutil
 import subprocess
 from pathlib import Path
@@ -40,12 +41,22 @@ class RepositoryService:
 
         print(f"Documents loaded: {len(documents)}")
         print(f"Chunks created: {len(chunks)}")
-        print("Starting embedding generation...")
 
         store = VectorStore(repo_name)
-        store.index_chunks(chunks)
 
-        print("Embedding generation completed.")
+        try:
+            print("Starting embedding generation...")
+
+            store.index_chunks(chunks)
+
+            print("Embedding generation completed.")
+
+        except Exception:
+            print("=" * 80)
+            print("ERROR DURING VECTOR INDEXING")
+            traceback.print_exc()
+            print("=" * 80)
+            raise
 
         return repo_name
 
@@ -61,9 +72,7 @@ class RepositoryService:
         )
 
         try:
-            client.delete_collection(
-                repository_name
-            )
+            client.delete_collection(repository_name)
         except Exception:
             pass
 
