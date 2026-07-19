@@ -178,7 +178,7 @@ def generate_documentation(repository: str):
         )
     
 @router.get("/chat/repository-health/{repository}")
-def repository_health(repository: str):
+async def repository_health(repository: str):
     try:
         return analysis_service.repository_health(repository)
     except Exception:
