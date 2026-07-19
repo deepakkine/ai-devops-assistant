@@ -8,7 +8,10 @@ class EmbeddingService:
         )
 
     def embed_documents(self, texts):
-        return self.embedding_model.embed_documents(texts)
+        print(f"Embedding {len(texts)} chunks...")
+        result = self.embedding_model.embed_documents(texts)
+        print("Embeddings generated successfully.")
+        return result
 
     def embed_query(self, text):
         return self.embedding_model.embed_query(text)
