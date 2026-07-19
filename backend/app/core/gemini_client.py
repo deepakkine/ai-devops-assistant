@@ -18,7 +18,7 @@ def ask_gemini(prompt: str):
 
     for model in MODELS:
         try:
-            logger.info("Trying Gemini model: %s", model)
+            logger.info(f"Trying Gemini model: {model}")
 
             llm = ChatGoogleGenerativeAI(
                 model=model,
@@ -30,10 +30,16 @@ def ask_gemini(prompt: str):
 
             response = llm.invoke(prompt)
 
+            logger.info(f"Model {model} succeeded")
+
             return response.content
 
         except Exception as e:
-            logger.exception("%s failed", model)
+            logger.exception(f"Model {model} failed")
+            print("=" * 80)
+            print(f"MODEL FAILED: {model}")
+            print(f"ERROR: {e}")
+            print("=" * 80)
             last_error = e
 
     raise RuntimeError(
@@ -46,7 +52,7 @@ def stream_gemini(prompt: str):
 
     for model in MODELS:
         try:
-            logger.info("Trying Gemini model: %s", model)
+            logger.info(f"Trying Gemini model: {model}")
 
             llm = ChatGoogleGenerativeAI(
                 model=model,
@@ -60,10 +66,16 @@ def stream_gemini(prompt: str):
                 if chunk.content:
                     yield chunk.content
 
+            logger.info(f"Model {model} succeeded")
+
             return
 
         except Exception as e:
-            logger.exception("%s failed", model)
+            logger.exception(f"Model {model} failed")
+            print("=" * 80)
+            print(f"MODEL FAILED: {model}")
+            print(f"ERROR: {e}")
+            print("=" * 80)
             last_error = e
 
     raise RuntimeError(
