@@ -1,3 +1,4 @@
+import traceback
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
