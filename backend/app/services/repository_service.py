@@ -38,8 +38,14 @@ class RepositoryService:
         splitter = TextSplitter()
         chunks = splitter.split_documents(documents)
 
+        print(f"Documents loaded: {len(documents)}")
+        print(f"Chunks created: {len(chunks)}")
+        print("Starting embedding generation...")
+
         store = VectorStore(repo_name)
         store.index_chunks(chunks)
+
+        print("Embedding generation completed.")
 
         return repo_name
 
