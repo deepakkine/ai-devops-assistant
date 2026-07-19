@@ -1,12 +1,17 @@
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
+from app.core.config import GEMINI_API_KEY
+
+
 class EmbeddingService:
     def __init__(self):
-        print("Using FAKE EmbeddingService")
+        self.embedding_model = GoogleGenerativeAIEmbeddings(
+            model="models/gemini-embedding-001",
+            google_api_key=GEMINI_API_KEY,
+        )
 
     def embed_documents(self, texts):
-        print(f"Generating fake embeddings for {len(texts)} chunks...")
-
-        # all-MiniLM-L6-v2 produces 384-dimensional embeddings
-        return [[0.0] * 384 for _ in texts]
+        return self.embedding_model.embed_documents(texts)
 
     def embed_query(self, text):
-        return [0.0] * 384
+        return self.embedding_model.embed_query(text)
