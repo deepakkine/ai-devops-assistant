@@ -181,8 +181,6 @@ def generate_documentation(repository: str):
 def repository_health(repository: str):
     try:
         return analysis_service.repository_health(repository)
-    except Exception as e:
-        raise HTTPException(
-            status_code=503,
-            detail=str(e),
-        )
+    except Exception:
+        traceback.print_exc()
+        raise
