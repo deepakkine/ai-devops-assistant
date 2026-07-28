@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from app.core.gemini_client import (
-    ask_gemini,
-    stream_gemini,
+from app.core.groq_client import (
+    ask_groq,
+    stream_groq,
 )
 from app.core.logger import logger
 from app.prompts.prompt_builder import PromptBuilder
@@ -109,7 +109,7 @@ Selected File:
             history,
         )
 
-        answer = ask_gemini(prompt)
+        answer = ask_groq(prompt)
 
         return {
             "answer": answer,
@@ -130,4 +130,4 @@ Selected File:
             history,
         )
 
-        return stream_gemini(prompt)
+        return stream_groq(prompt)

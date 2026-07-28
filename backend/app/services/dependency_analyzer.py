@@ -138,22 +138,45 @@ class DependencyAnalyzer:
             errors="ignore",
         )
 
-        modules = re.findall(
-            r'source\s*=\s*"(.+?)"',
-            text,
-        )
-
         edges = set()
 
         source = self._source(file)
 
-        for module in modules:
+        #
+        # Module blocks
+        #
+        for match in re.finditer(
+            r'module\s+"([^"]+)"\s*{([^}]*)}',
+            text,
+            re.DOTALL,
+        ):
+            module_name = match.group(1)
 
             edges.add(
                 (
                     source,
-                    module,
+                    module_name,
                 )
             )
+
+        #
+        # Providers
+        #
+        providers = re.findall(
+            r'required_providers\s*{([\s\S]*?)}',
+            text,
+        )
+
+        for block in providers:
+            for provider in re.findall(
+                r'([A-Za-z0-9_-]+)\s*=',
+                block,
+            ):
+                edges.add(
+                    (
+                        source,
+                        f"provider:{provider}",
+                    )
+                )
 
         return edges

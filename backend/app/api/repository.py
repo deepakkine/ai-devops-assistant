@@ -1,3 +1,4 @@
+import traceback
 from chromadb import PersistentClient
 from fastapi import APIRouter, HTTPException
 
@@ -54,11 +55,9 @@ def list_repositories():
 @router.get("/repositories/{repository_name}/map")
 def repository_map(repository_name: str):
     try:
-        return {
-            "answer": analysis_service.generate_repository_map(
+        return analysis_service.generate_repository_map(
                 repository_name
             )
-        }
 
     except Exception as e:
         raise HTTPException(

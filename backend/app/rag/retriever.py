@@ -1,13 +1,17 @@
+import logging
+
 from chromadb import PersistentClient
 
+from app.core.config import CHROMADB_PATH
 from app.rag.embedding_service import EmbeddingService
+
+logger = logging.getLogger(__name__)
 
 
 class Retriever:
-
     def __init__(self, collection_name: str):
         self.client = PersistentClient(
-            path="./storage/chromadb"
+            path=CHROMADB_PATH,
         )
 
         self.collection = self.client.get_collection(
@@ -21,10 +25,13 @@ class Retriever:
         question: str,
         k: int = 5,
     ):
-        query_embedding = (
-            self.embedding_service.embed_query(
-                question
-            )
+        """
+        Retrieve the most relevant chunks for a user's question
+        using vector similarity search.
+        """
+
+        query_embedding = self.embedding_service.embed_query(
+            question
         )
 
         results = self.collection.query(
@@ -55,8 +62,8 @@ class Retriever:
         k: int = 25,
     ):
         """
-        Return representative chunks for generating
-        a project overview.
+        Retrieve representative chunks from unique files
+        to provide project-level context.
         """
 
         results = self.collection.get(
@@ -66,28 +73,17 @@ class Retriever:
             ],
         )
 
-        docs = []
+        logger.debug(
+            "Collection=%s | Count=%d | Retrieved=%d",
+            self.collection.name,
+            self.collection.count(),
+            len(results["documents"]),
+        )
 
-        seen = set()
+        docs: list[dict] = []
+        seen: set[str] = set()
 
-        # README first
-        for document, metadata in zip(
-            results["documents"],
-            results["metadatas"],
-        ):
-            path = metadata["path"]
-
-            if "readme" in path.lower():
-                docs.append(
-                    {
-                        "content": document,
-                        "metadata": metadata,
-                    }
-                )
-
-                seen.add(path)
-
-        # One chunk per file
+        # Keep only the first chunk from each file.
         for document, metadata in zip(
             results["documents"],
             results["metadatas"],
@@ -109,12 +105,21 @@ class Retriever:
             if len(docs) >= k:
                 break
 
+        logger.debug(
+            "Returning %d representative documents for project context.",
+            len(docs),
+        )
+
         return docs
-    
+
     def retrieve_file_context(
         self,
         file_path: str,
     ):
+        """
+        Retrieve all indexed chunks for a specific file.
+        """
+
         results = self.collection.get(
             where={
                 "path": file_path,

@@ -13,7 +13,7 @@ analysis_service = AnalysisService()
 
 
 @router.post("/chat", response_model=ChatResponse)
-def chat(request: ChatRequest):
+async def chat(request: ChatRequest):
     try:
         response = chat_service.chat(
             repository=request.repository,
@@ -32,7 +32,7 @@ def chat(request: ChatRequest):
 
 
 @router.post("/chat/stream")
-def stream_chat(request: ChatRequest):
+async def stream_chat(request: ChatRequest):
     try:
         generator = chat_service.stream_chat(
             repository=request.repository,
@@ -54,7 +54,7 @@ def stream_chat(request: ChatRequest):
 
 
 @router.get("/chat/project-overview/{repository}")
-def project_overview(repository: str):
+async def project_overview(repository: str):
     try:
         answer = analysis_service.project_overview(
             repository
@@ -64,15 +64,13 @@ def project_overview(repository: str):
             "answer": answer,
         }
 
-    except Exception as e:
-        raise HTTPException(
-            status_code=503,
-            detail=str(e),
-        )
+    except Exception:
+        traceback.print_exc()
+        raise
 
 
 @router.get("/chat/architecture/{repository}")
-def architecture(repository: str):
+async def architecture(repository: str):
     try:
         answer = (
             analysis_service.generate_architecture(
@@ -84,15 +82,13 @@ def architecture(repository: str):
             "answer": answer,
         }
 
-    except Exception as e:
-        raise HTTPException(
-            status_code=503,
-            detail=str(e),
-        )
+    except Exception:
+        traceback.print_exc()
+        raise
 
 
 @router.get("/chat/dependency-graph/{repository}")
-def dependency_graph(repository: str):
+async def dependency_graph(repository: str):
     try:
         result = (
             analysis_service.generate_dependency_graph(
@@ -102,14 +98,12 @@ def dependency_graph(repository: str):
 
         return result
 
-    except Exception as e:
-        raise HTTPException(
-            status_code=503,
-            detail=str(e),
-        )
+    except Exception:
+        traceback.print_exc()
+        raise
     
 @router.get("/chat/security-analysis/{repository}")
-def security_analysis(repository: str):
+async def security_analysis(repository: str):
     try:
         answer = analysis_service.security_analysis(
             repository
@@ -126,7 +120,7 @@ def security_analysis(repository: str):
         )
     
 @router.get("/chat/code-review/{repository}/{file_path:path}")
-def code_review(
+async def code_review(
     repository: str,
     file_path: str,
 ):
@@ -147,7 +141,7 @@ def code_review(
         )
     
 @router.get("/chat/performance-analysis/{repository}")
-def performance_analysis(repository: str):
+async def performance_analysis(repository: str):
     try:
         answer = analysis_service.performance_analysis(repository)
 
@@ -162,7 +156,7 @@ def performance_analysis(repository: str):
         )
     
 @router.get("/chat/documentation/{repository}")
-def generate_documentation(repository: str):
+async def generate_documentation(repository: str):
     try:
         answer = analysis_service.generate_documentation(
             repository
@@ -172,11 +166,9 @@ def generate_documentation(repository: str):
             "answer": answer,
         }
 
-    except Exception as e:
-        raise HTTPException(
-            status_code=503,
-            detail=str(e),
-        )
+    except Exception:
+        traceback.print_exc()
+        raise
     
 @router.get("/chat/repository-health/{repository}")
 async def repository_health(repository: str):
