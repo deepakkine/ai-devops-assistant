@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import mermaid from "mermaid";
 
+import { Canvg } from "canvg";
+
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
   atomDark,
@@ -79,6 +81,9 @@ function MermaidDiagram({ chart }) {
           svgElement.style.margin = "0 auto";
         }
       } catch (err) {
+         console.error("Mermaid render failed:", err);
+         console.log("Diagram:\n", code);
+
         if (!cancelled && containerRef.current) {
           containerRef.current.innerHTML = `
   <pre style="padding:16px;color:red;white-space:pre-wrap;">
@@ -129,39 +134,54 @@ function MermaidDiagram({ chart }) {
     URL.revokeObjectURL(url);
   }
 
-  function downloadPNG() {
-    const blob = new Blob([svgContentRef.current], {
-      type: "image/svg+xml",
+  async function downloadPNG() {
+    const svg = containerRef.current.querySelector("svg");
+
+    if (!svg) return;
+
+    const rect = svg.getBoundingClientRect();
+
+    const canvas = document.createElement("canvas");
+
+    canvas.width = rect.width * 2;
+    canvas.height = rect.height * 2;
+
+    const ctx = canvas.getContext("2d");
+
+    ctx.scale(2, 2);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, rect.width, rect.height);
+
+    const data = new XMLSerializer().serializeToString(svg);
+
+    const img = new Image();
+
+    const blob = new Blob([data], {
+      type: "image/svg+xml;charset=utf-8",
     });
 
     const url = URL.createObjectURL(blob);
 
-    const img = new Image();
-
     img.onload = () => {
-      const canvas =
-        document.createElement("canvas");
-
-      canvas.width = img.width;
-      canvas.height = img.height;
-
-      const ctx = canvas.getContext("2d");
-
       ctx.drawImage(img, 0, 0);
 
       URL.revokeObjectURL(url);
 
-      const png = canvas.toDataURL(
-        "image/png"
-      );
+      canvas.toBlob((blob) => {
+        if (!blob) return;
 
-      const a =
-        document.createElement("a");
+        const pngUrl = URL.createObjectURL(blob);
 
-      a.href = png;
-      a.download = "diagram.png";
+        const a = document.createElement("a");
 
-      a.click();
+        a.href = pngUrl;
+        a.download = "diagram.png";
+
+        a.click();
+
+        URL.revokeObjectURL(pngUrl);
+      });
     };
 
     img.src = url;

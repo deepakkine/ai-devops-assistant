@@ -614,6 +614,9 @@ Include:
           activeRepository
         );
 
+      console.log("Architecture API Response");
+      console.log(response);
+
       setChats((prev) =>
         prev.map((chat) =>
           chat.id === currentChat
@@ -664,9 +667,7 @@ Include:
       );
 
       const response =
-        await getRepositoryMap(
-          activeRepository
-        );
+        await getRepositoryMap(activeRepository);
 
       setChats((prev) =>
         prev.map((chat) =>
@@ -677,7 +678,10 @@ Include:
                   ...chat.messages,
                   {
                     role: "assistant",
-                    text: response.answer,
+                    type: "repository-map",
+                    facts: response.facts,
+                    factsMarkdown: response.facts_markdown,
+                    summary: response.summary,
                     sources: [],
                   },
                 ],
@@ -722,15 +726,13 @@ Include:
           activeRepository
         );
 
-  const message =`${response.analysis}
-
-  \`\`\`mermaid
-  ${response.mermaid}
-  \`\`\``;
-
-  console.log("========== GENERATED GRAPH ==========");
-  console.log({ message });
-  console.log("========== END GENERATED GRAPH ==========");
+  const message = [
+    response.analysis,
+    "",
+    "```mermaid",
+    response.mermaid,
+    "```",
+  ].join("\n");
 
       setChats((prev) =>
         prev.map((chat) =>

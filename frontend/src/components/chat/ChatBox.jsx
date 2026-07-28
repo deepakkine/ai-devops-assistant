@@ -31,6 +31,10 @@ export default function ChatBox({
           key={index}
           role={message.role}
           text={message.text}
+          type={message.type}
+          facts={message.facts}
+          summary={message.summary}
+          factsMarkdown={message.factsMarkdown}
           sources={message.sources}
           onSourceClick={onSourceClick}
         />
