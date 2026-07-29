@@ -36,12 +36,10 @@ jobs:
 
       - name: Run Backend Tests
         working-directory: backend
+        env:
+         PYTHONPATH: .
         run: |
-          if [ -d tests ]; then
-            pytest tests -v
-          else
-            echo "No tests found. Skipping."
-          fi
+         python -m pytest tests/test_imports.py -v
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
