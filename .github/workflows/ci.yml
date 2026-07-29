@@ -108,6 +108,10 @@ jobs:
           docker push \
             $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
 
+      - name: Verify EC2 Instance ID
+        run: |
+            echo "Deploying to instance: ${{ secrets.EC2_INSTANCE_ID }}"
+
       - name: Deploy to EC2 via AWS SSM
         run: |
             COMMAND_ID=$(aws ssm send-command \
