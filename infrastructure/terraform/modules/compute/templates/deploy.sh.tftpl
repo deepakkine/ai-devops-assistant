@@ -17,8 +17,16 @@ docker compose pull
 
 docker compose up -d --remove-orphans
 
+echo "Waiting for container to become healthy..."
+
+timeout 180 bash -c '
+until [ "$(docker inspect --format="{{.State.Health.Status}}" ai-devops-assistant)" = "healthy" ]; do
+    sleep 5
+done
+'
+
 docker compose ps
 
-curl -f http://localhost:8000/health
-
 docker image prune -af
+
+echo "Deployment completed successfully."
