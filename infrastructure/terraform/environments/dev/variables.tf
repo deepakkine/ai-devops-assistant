@@ -27,3 +27,7 @@ variable "public_subnet_cidr" {
 variable "availability_zone" {
   default = "ap-south-1a"
 }
+
+variable "allowed_ssh_cidr" {
+  type = string
+}
