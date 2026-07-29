@@ -41,4 +41,6 @@ module "compute" {
   public_subnet_id      = module.networking.public_subnet_id
   security_group_id     = module.security.security_group_id
   instance_profile_name = module.iam.instance_profile_name
+
+  ecr_repository_url = module.ecr.repository_url
 }

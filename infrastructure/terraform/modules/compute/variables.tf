@@ -21,3 +21,8 @@ variable "security_group_id" {
 variable "instance_profile_name" {
   type = string
 }
+
+variable "ecr_repository_url" {
+  description = "ECR repository URL"
+  type        = string
+}

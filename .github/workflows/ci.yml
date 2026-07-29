@@ -1,0 +1,125 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  ECR_REPOSITORY: ai-devops-assistant-dev
+
+jobs:
+  build-and-deploy:
+    name: Build, Push & Deploy
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Backend Dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run Backend Tests
+        working-directory: backend
+        run: |
+          if [ -d tests ]; then
+            pytest tests -v
+          else
+            echo "No tests found. Skipping."
+          fi
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Determine Next Image Version
+        run: |
+          TAGS=$(aws ecr describe-images \
+            --repository-name $ECR_REPOSITORY \
+            --query 'imageDetails[].imageTags[]' \
+            --output text 2>/dev/null || true)
+
+          if [ -z "$TAGS" ]; then
+            VERSION=1
+          else
+            VERSION=$(echo "$TAGS" \
+              | tr '\t' '\n' \
+              | grep '^v[0-9]\+$' \
+              | sed 's/v//' \
+              | sort -n \
+              | tail -1)
+
+            if [ -z "$VERSION" ]; then
+              VERSION=1
+            else
+              VERSION=$((VERSION + 1))
+            fi
+          fi
+
+          echo "IMAGE_TAG=v$VERSION" >> "$GITHUB_ENV"
+          echo "Next Image Version: v$VERSION"
+
+      - name: Build Docker Images
+        run: |
+          docker build \
+            -f backend/Dockerfile \
+            -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest \
+            backend
+
+      - name: Push Docker Images
+        run: |
+          docker push \
+            $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+
+          docker push \
+            $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
+
+      - name: Deploy to EC2 via AWS SSM
+        run: |
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy latest image ($IMAGE_TAG)" \
+            --parameters '{
+              "commands":[
+                "cd /home/ubuntu/ai-devops-assistant",
+                "echo \"ECR_IMAGE=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG\" > .env",
+                "echo \"GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}\" >> .env",
+                "echo \"PORT=8000\" >> .env",
+                "bash deployment/deploy.sh"
+              ]
+            }' \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "Command ID: $COMMAND_ID"
+
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ secrets.EC2_INSTANCE_ID }}"
+
+          aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ secrets.EC2_INSTANCE_ID }}"

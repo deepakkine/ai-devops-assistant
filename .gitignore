@@ -24,6 +24,9 @@ Thumbs.db
 # Imported repositories
 data/
 
+# Terraform secrets
+**/*.tfvars
+*.tfvars
 .terraform/
 *.tfstate
 *.tfstate.*

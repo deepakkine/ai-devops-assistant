@@ -1,0 +1,50 @@
+#!/bin/bash
+set -euxo pipefail
+
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get update -y
+apt-get upgrade -y
+
+apt-get install -y \
+    docker.io \
+    docker-compose-v2 \
+    nginx \
+    curl \
+    unzip \
+    jq \
+    awscli
+
+systemctl enable docker
+systemctl start docker
+
+systemctl enable nginx
+systemctl start nginx
+
+usermod -aG docker ubuntu
+
+APP_DIR="/home/ubuntu/ai-devops-assistant"
+
+mkdir -p $${APP_DIR}
+mkdir -p $${APP_DIR}/deployment
+
+cat > $${APP_DIR}/docker-compose.yml <<'EOF'
+${docker_compose}
+EOF
+
+cat > $${APP_DIR}/deployment/deploy.sh <<'EOF'
+${deploy_script}
+EOF
+
+cat > /etc/nginx/sites-available/default <<'EOF'
+${nginx_conf}
+EOF
+
+chmod +x $${APP_DIR}/deployment/deploy.sh
+
+chown -R ubuntu:ubuntu $${APP_DIR}
+
+nginx -t
+systemctl reload nginx
+
+echo "Bootstrap completed successfully."
