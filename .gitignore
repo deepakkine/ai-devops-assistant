@@ -23,3 +23,9 @@ Thumbs.db
 
 # Imported repositories
 data/
+
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+terraform.tfvars
