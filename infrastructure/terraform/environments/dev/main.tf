@@ -16,3 +16,10 @@ module "security" {
   vpc_id           = module.networking.vpc_id
   allowed_ssh_cidr = var.allowed_ssh_cidr
 }
+
+module "iam" {
+  source = "../../modules/iam"
+
+  project_name = var.project_name
+  environment  = var.environment
+}
