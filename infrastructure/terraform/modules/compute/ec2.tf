@@ -22,6 +22,7 @@ resource "aws_instance" "app" {
 
   iam_instance_profile = var.instance_profile_name
 
+  user_data_replace_on_change = true
   user_data = file("${path.module}/user_data.sh")
 
   associate_public_ip_address = true
