@@ -120,13 +120,7 @@ jobs:
                 "echo \"ECR_IMAGE='$AWS_ACCOUNT_ID'.dkr.ecr.'$AWS_REGION'.amazonaws.com/'$ECR_REPOSITORY':'$IMAGE_TAG'\" > .env",
                 "echo \"GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}\" >> .env",
                 "echo \"PORT=8000\" >> .env",
-                "cd /home/ubuntu/ai-devops-assistant",
-                "echo \"ECR_IMAGE=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG\" > .env",
-                "echo \"GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}\" >> .env",
-                "echo \"PORT=8000\" >> .env",
-                "docker compose pull",
-                "docker compose up -d --remove-orphans",
-                "docker image prune -af"
+                "bash deployment/deploy.sh"
                 ]
             }' \
             --query "Command.CommandId" \

@@ -3,8 +3,14 @@ set -euxo pipefail
 
 cd /home/ubuntu/ai-devops-assistant
 
+sudo systemctl start docker
+
 docker compose pull
 
 docker compose up -d --remove-orphans
+
+docker compose ps
+
+curl -f http://localhost:8000/health
 
 docker image prune -af
