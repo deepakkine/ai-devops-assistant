@@ -33,11 +33,25 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest
+      
+      - name: Verify GROQ_API_KEY
+        env:
+            GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+            if [ -z "$GROQ_API_KEY" ]; then
+            echo "❌ GROQ_API_KEY is NOT available"
+            exit 1
+            else
+            echo "✅ GROQ_API_KEY is available"
+            echo "Length: ${#GROQ_API_KEY}"
+            fi    
 
       - name: Run Backend Tests
         working-directory: backend
         env:
          PYTHONPATH: .
+         GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+         CHROMADB_PATH: ./chromadb
         run: |
          python -m pytest tests/test_imports.py -v
 
