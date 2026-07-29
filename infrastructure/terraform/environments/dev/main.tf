@@ -30,3 +30,15 @@ module "ecr" {
   project_name = var.project_name
   environment  = var.environment
 }
+
+module "compute" {
+  source = "../../modules/compute"
+
+  project_name  = var.project_name
+  environment   = var.environment
+  instance_type = var.instance_type
+
+  public_subnet_id      = module.networking.public_subnet_id
+  security_group_id     = module.security.security_group_id
+  instance_profile_name = module.iam.instance_profile_name
+}

@@ -31,3 +31,8 @@ variable "availability_zone" {
 variable "allowed_ssh_cidr" {
   type = string
 }
+
+variable "instance_type" {
+  type    = string
+  default = "t3.small"
+}
