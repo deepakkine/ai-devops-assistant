@@ -29,3 +29,13 @@ data/
 *.tfstate.*
 crash.log
 terraform.tfvars
+
+test-env/
+venv/
+backend/venv/
+__pycache__/
+*.pyc
+node_modules/
+backend/storage/
+
+*.deb
