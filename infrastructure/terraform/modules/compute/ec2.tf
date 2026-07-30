@@ -23,9 +23,15 @@ resource "aws_instance" "app" {
   iam_instance_profile = var.instance_profile_name
 
   user_data_replace_on_change = true
-  user_data = file("${path.module}/user_data.sh.tftpl")
+  user_data                   = file("${path.module}/user_data.sh.tftpl")
 
   associate_public_ip_address = true
+
+  root_block_device {
+    volume_type           = "gp3"
+    volume_size           = 20
+    delete_on_termination = true
+  }
 
   tags = {
     Name = "${var.project_name}-${var.environment}-ec2"
