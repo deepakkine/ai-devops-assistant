@@ -118,7 +118,7 @@ jobs:
             --parameters '{
               "commands":[
                 "set -e",
-                "git config --global --add safe.directory /home/ubuntu/ai-devops-assistant",
+                "git config --system --add safe.directory /home/ubuntu/ai-devops-assistant",
                 "cd /home/ubuntu/ai-devops-assistant",
                 "git fetch origin",
                 "git checkout main",
