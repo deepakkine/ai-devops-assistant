@@ -23,16 +23,7 @@ resource "aws_instance" "app" {
   iam_instance_profile = var.instance_profile_name
 
   user_data_replace_on_change = true
-  user_data = templatefile("${path.module}/user_data.sh.tftpl", {
-    docker_compose = templatefile(
-      "${path.module}/templates/docker-compose.yml.tftpl",
-      {}
-    )
-
-    deploy_script = templatefile("${path.module}/templates/deploy.sh.tftpl", {})
-
-    nginx_conf = templatefile("${path.module}/templates/nginx.conf.tftpl", {})
-  })
+  user_data = file("${path.module}/user_data.sh.tftpl")
 
   associate_public_ip_address = true
 
