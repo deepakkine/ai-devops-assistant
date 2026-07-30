@@ -73,7 +73,7 @@ docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
 
 echo "===== Verifying application ====="
 
-curl --fail --silent http://localhost/health
+curl --fail --silent http://localhost:8000/health
 
 echo
 echo "Application health check passed."
