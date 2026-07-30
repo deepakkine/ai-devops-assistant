@@ -6,6 +6,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
 
 apt-get install -y \
+    git \
     docker.io \
     docker-compose-v2 \
     nginx \
@@ -24,17 +25,25 @@ unzip -q awscliv2.zip
 
 rm -rf aws awscliv2.zip
 
+# Enable services
 systemctl enable docker
 systemctl start docker
 
 systemctl enable nginx
 systemctl start nginx
 
+# Allow ubuntu user to use Docker
 usermod -aG docker ubuntu
 
 APP_DIR="/home/ubuntu/ai-devops-assistant"
+REPO_URL="https://github.com/deepakkine/ai-devops-assistant.git"
 
-mkdir -p "$APP_DIR"
+# Clone repository if it doesn't already exist
+if [ ! -d "$APP_DIR/.git" ]; then
+    rm -rf "$APP_DIR"
+    git clone "$REPO_URL" "$APP_DIR"
+fi
+
 mkdir -p "$APP_DIR/deployment"
 
 chown -R ubuntu:ubuntu "$APP_DIR"

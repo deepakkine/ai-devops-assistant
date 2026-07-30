@@ -33,27 +33,27 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest
-      
+
       - name: Verify GROQ_API_KEY
         env:
-            GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
-            if [ -z "$GROQ_API_KEY" ]; then
+          if [ -z "$GROQ_API_KEY" ]; then
             echo "❌ GROQ_API_KEY is NOT available"
             exit 1
-            else
+          else
             echo "✅ GROQ_API_KEY is available"
             echo "Length: ${#GROQ_API_KEY}"
-            fi    
+          fi
 
       - name: Run Backend Tests
         working-directory: backend
         env:
-         PYTHONPATH: .
-         GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-         CHROMADB_PATH: ./chromadb
+          PYTHONPATH: .
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          CHROMADB_PATH: ./chromadb
         run: |
-         python -m pytest tests/test_imports.py -v
+          python -m pytest tests/test_imports.py -v
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -92,7 +92,7 @@ jobs:
           echo "IMAGE_TAG=v$VERSION" >> "$GITHUB_ENV"
           echo "Next Image Version: v$VERSION"
 
-      - name: Build Docker Images
+      - name: Build Docker Image
         run: |
           docker build \
             -f backend/Dockerfile \
@@ -102,46 +102,54 @@ jobs:
 
       - name: Push Docker Images
         run: |
-          docker push \
-            $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
-
-          docker push \
-            $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
 
       - name: Verify EC2 Instance ID
         run: |
-            echo "Deploying to instance: ${{ secrets.EC2_INSTANCE_ID }}"
+          echo "Deploying to instance: ${{ secrets.EC2_INSTANCE_ID }}"
 
       - name: Deploy to EC2 via AWS SSM
         run: |
-            COMMAND_ID=$(aws ssm send-command \
+          COMMAND_ID=$(aws ssm send-command \
             --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
-            --comment "Deploy latest image ($IMAGE_TAG)" \
+            --comment "Deploy image $IMAGE_TAG" \
             --parameters '{
-                "commands":[
+              "commands":[
+                "set -e",
                 "cd /home/ubuntu/ai-devops-assistant",
-                "echo \"ECR_IMAGE='$AWS_ACCOUNT_ID'.dkr.ecr.'$AWS_REGION'.amazonaws.com/'$ECR_REPOSITORY':'$IMAGE_TAG'\" > .env",
+                "git status",
+                "git fetch origin",
+                "git checkout main",
+                "git pull origin main",
+                "echo \"ECR_IMAGE='"$AWS_ACCOUNT_ID"'.dkr.ecr.'"$AWS_REGION"'.amazonaws.com/'"$ECR_REPOSITORY"':'"$IMAGE_TAG"'\" > .env",
                 "echo \"GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}\" >> .env",
                 "echo \"PORT=8000\" >> .env",
+                "chmod +x deployment/deploy.sh",
+                "sudo install -m 644 deployment/nginx.conf /etc/nginx/sites-available/default",
+                "sudo nginx -t",
+                "sudo systemctl reload nginx",
                 "bash deployment/deploy.sh"
-                ]
+              ]
             }' \
             --query "Command.CommandId" \
             --output text)
 
-            echo "Command ID: $COMMAND_ID"
+          echo "Command ID: $COMMAND_ID"
 
-            set +e
+          set +e
 
-            aws ssm wait command-executed \
+          aws ssm wait command-executed \
             --command-id "$COMMAND_ID" \
             --instance-id "${{ secrets.EC2_INSTANCE_ID }}"
 
-            STATUS=$?
+          STATUS=$?
 
-            aws ssm get-command-invocation \
+          echo "========== SSM Output =========="
+
+          aws ssm get-command-invocation \
             --command-id "$COMMAND_ID" \
             --instance-id "${{ secrets.EC2_INSTANCE_ID }}"
 
-            exit $STATUS
+          exit $STATUS
