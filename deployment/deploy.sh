@@ -75,6 +75,8 @@ echo "===== Verifying application ====="
 
 curl --fail --silent http://localhost:8000/health
 
+curl --fail --silent https://deepakkine.online/health || true
+
 echo
 echo "Application health check passed."
 
