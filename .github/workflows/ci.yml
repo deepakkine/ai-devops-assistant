@@ -122,11 +122,9 @@ jobs:
                 "git fetch origin",
                 "git checkout main",
                 "git reset --hard origin/main",
-                "cat > .env <<EOF",
-                "ECR_IMAGE=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG",
-                "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}",
-                "PORT=8000",
-                "EOF",
+                "echo \"ECR_IMAGE='${{ env.AWS_ACCOUNT_ID }}'.dkr.ecr.'${{ env.AWS_REGION }}'.amazonaws.com/'${{ env.ECR_REPOSITORY }}':'"$IMAGE_TAG"'\" > .env",
+                "echo \"GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}\" >> .env",
+                "echo \"PORT=8000\" >> .env",
                 "[ -x deployment/deploy.sh ] || chmod +x deployment/deploy.sh",
                 "bash deployment/deploy.sh"
               ]
