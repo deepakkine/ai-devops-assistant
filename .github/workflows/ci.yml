@@ -118,15 +118,16 @@ jobs:
             --parameters '{
               "commands":[
                 "set -e",
-                "git config --system --add safe.directory /home/ubuntu/ai-devops-assistant",
                 "cd /home/ubuntu/ai-devops-assistant",
                 "git fetch origin",
                 "git checkout main",
                 "git reset --hard origin/main",
-                "echo \"ECR_IMAGE='"$AWS_ACCOUNT_ID"'.dkr.ecr.'"$AWS_REGION"'.amazonaws.com/'"$ECR_REPOSITORY"':'"$IMAGE_TAG"'\" > .env",
-                "echo \"GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}\" >> .env",
-                "echo \"PORT=8000\" >> .env",
-                "chmod +x deployment/deploy.sh",
+                "cat > .env <<EOF",
+                "ECR_IMAGE=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG",
+                "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}",
+                "PORT=8000",
+                "EOF",
+                "[ -x deployment/deploy.sh ] || chmod +x deployment/deploy.sh",
                 "bash deployment/deploy.sh"
               ]
             }' \
