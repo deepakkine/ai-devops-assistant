@@ -3,49 +3,30 @@ set -euxo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
 
+echo "===== Installing minimum dependencies ====="
+
 apt-get update -y
 
 apt-get install -y \
     git \
-    docker.io \
-    docker-compose-v2 \
-    nginx \
-    curl \
-    unzip \
-    jq
-
-# Install AWS CLI v2
-cd /tmp
-
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip
-
-unzip -q awscliv2.zip
-
-./aws/install
-
-rm -rf aws awscliv2.zip
-
-# Enable services
-systemctl enable docker
-systemctl start docker
-
-systemctl enable nginx
-systemctl start nginx
-
-# Allow ubuntu user to use Docker
-usermod -aG docker ubuntu
+    curl
 
 APP_DIR="/home/ubuntu/ai-devops-assistant"
 REPO_URL="https://github.com/deepakkine/ai-devops-assistant.git"
 
-# Clone repository if it doesn't already exist
+echo "===== Cloning repository ====="
+
 if [ ! -d "$APP_DIR/.git" ]; then
     rm -rf "$APP_DIR"
     git clone "$REPO_URL" "$APP_DIR"
 fi
 
-mkdir -p "$APP_DIR/deployment"
-
 chown -R ubuntu:ubuntu "$APP_DIR"
 
-echo "Bootstrap completed successfully."
+chmod +x "$APP_DIR/deployment/bootstrap.sh"
+
+echo "===== Running bootstrap script ====="
+
+bash "$APP_DIR/deployment/bootstrap.sh"
+
+echo "===== EC2 initialization completed ====="

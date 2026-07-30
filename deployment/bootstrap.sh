@@ -18,12 +18,15 @@ echo "===== Enable Docker ====="
 systemctl enable docker
 systemctl start docker
 
+echo "===== Configure Docker ====="
+usermod -aG docker ubuntu
+
 echo "===== Enable Nginx ====="
 systemctl enable nginx
 systemctl start nginx
 
 echo "===== Install AWS CLI ====="
-if ! command -v aws >/dev/null; then
+if ! command -v aws >/dev/null 2>&1; then
     ARCH=$(uname -m)
 
     if [ "$ARCH" = "x86_64" ]; then
@@ -40,17 +43,21 @@ fi
 echo "===== Clone Repository ====="
 
 APP_DIR="/home/ubuntu/ai-devops-assistant"
+REPO_URL="https://github.com/deepakkine/ai-devops-assistant.git"
 
 if [ ! -d "$APP_DIR/.git" ]; then
     rm -rf "$APP_DIR"
 
-    git clone \
-      https://github.com/deepakkine/ai-devops-assistant.git \
-      "$APP_DIR"
+    git clone "$REPO_URL" "$APP_DIR"
 fi
 
-echo "===== Fix ownership ====="
+echo "===== Configure Git ====="
+git config --system --add safe.directory "$APP_DIR"
 
+echo "===== Set Permissions ====="
 chown -R ubuntu:ubuntu "$APP_DIR"
 
-echo "===== Bootstrap Complete ====="
+chmod +x "$APP_DIR/deployment/bootstrap.sh"
+chmod +x "$APP_DIR/deployment/deploy.sh"
+
+echo "===== Bootstrap Completed Successfully ====="
