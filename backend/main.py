@@ -7,7 +7,7 @@ from app.api.repository import router as repository_router
 from app.api.files import router as files_router
 
 app = FastAPI(
-    title="AI DevOps Assistant",
+    title="AI DevOps Assistant 🚀",
     version="1.0.0",
 )
 
@@ -31,7 +31,7 @@ app.include_router(files_router, prefix="/api/v1")
 
 @app.get("/")
 def root():
-    return {"message": "AI DevOps Assistant API"}
+    return {"message": "AI DevOps Assistant 🚀 API"}
 
 
 @app.get("/health")
