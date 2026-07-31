@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euxo pipefail
 
+APP_DIR="/home/ubuntu/ai-devops-assistant"
+REPO_URL="https://github.com/deepakkine/ai-devops-assistant.git"
+
 echo "===== Updating system ====="
 apt-get update
 apt-get upgrade -y
@@ -21,18 +24,16 @@ systemctl start docker
 echo "===== Configure Docker ====="
 usermod -aG docker ubuntu
 
-echo "===== Enable Nginx ====="
-systemctl enable nginx
-systemctl start nginx
-
 echo "===== Install AWS CLI ====="
 if ! command -v aws >/dev/null 2>&1; then
     ARCH=$(uname -m)
 
     if [ "$ARCH" = "x86_64" ]; then
-        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" \
+            -o "/tmp/awscliv2.zip"
     else
-        curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "/tmp/awscliv2.zip"
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" \
+            -o "/tmp/awscliv2.zip"
     fi
 
     cd /tmp
@@ -42,12 +43,8 @@ fi
 
 echo "===== Clone Repository ====="
 
-APP_DIR="/home/ubuntu/ai-devops-assistant"
-REPO_URL="https://github.com/deepakkine/ai-devops-assistant.git"
-
 if [ ! -d "$APP_DIR/.git" ]; then
     rm -rf "$APP_DIR"
-
     git clone "$REPO_URL" "$APP_DIR"
 fi
 
@@ -59,5 +56,15 @@ chown -R ubuntu:ubuntu "$APP_DIR"
 
 chmod +x "$APP_DIR/deployment/bootstrap.sh"
 chmod +x "$APP_DIR/deployment/deploy.sh"
+
+echo "===== Configure Nginx ====="
+
+cp "$APP_DIR/deployment/nginx.conf" \
+   /etc/nginx/sites-available/default
+
+nginx -t
+
+systemctl enable nginx
+systemctl restart nginx
 
 echo "===== Bootstrap Completed Successfully ====="

@@ -26,7 +26,10 @@ resource "aws_instance" "app" {
 
   user_data = templatefile(
     "${path.module}/user_data.sh.tftpl",
-    {}
+    {
+      app_dir  = "/home/ubuntu/ai-devops-assistant"
+      repo_url = "https://github.com/deepakkine/ai-devops-assistant.git"
+    }
   )
 
   associate_public_ip_address = true
