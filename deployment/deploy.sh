@@ -5,19 +5,29 @@ echo "======================================="
 echo "Starting deployment: $(date)"
 echo "======================================="
 
-cd /home/ubuntu/ai-devops-assistant
+PROJECT_DIR="/home/ubuntu/ai-devops-assistant"
+COMPOSE_FILE="deployment/docker-compose.yml"
+ENV_FILE=".env"
 
 AWS_REGION="ap-south-1"
 AWS_ACCOUNT_ID="848504403730"
+
+cd "$PROJECT_DIR"
 
 echo "===== Disk usage before deployment ====="
 df -h
 
 echo "===== Ensuring Docker is running ====="
 
-if ! systemctl is-active --quiet docker; then
-    sudo systemctl start docker
-fi
+sudo systemctl start docker
+sudo systemctl enable docker
+
+until docker info >/dev/null 2>&1; do
+    echo "Waiting for Docker daemon..."
+    sleep 2
+done
+
+echo "Docker is ready."
 
 echo "===== Logging into Amazon ECR ====="
 
@@ -29,8 +39,8 @@ docker login \
 echo "===== Stopping existing containers ====="
 
 docker compose \
-    --env-file .env \
-    -f deployment/docker-compose.yml \
+    --env-file "$ENV_FILE" \
+    -f "$COMPOSE_FILE" \
     down --remove-orphans || true
 
 echo "===== Cleaning Docker builder cache ====="
@@ -40,49 +50,65 @@ docker builder prune -f
 echo "===== Pulling latest image ====="
 
 docker compose \
-    --env-file .env \
-    -f deployment/docker-compose.yml \
+    --env-file "$ENV_FILE" \
+    -f "$COMPOSE_FILE" \
     pull
 
 echo "===== Starting application ====="
 
 docker compose \
-    --env-file .env \
-    -f deployment/docker-compose.yml \
+    --env-file "$ENV_FILE" \
+    -f "$COMPOSE_FILE" \
     up -d --remove-orphans
 
-echo "===== Waiting for container to become healthy ====="
+echo "===== Waiting for container to start ====="
 
 timeout 180 bash -c '
-until docker inspect ai-devops-assistant >/dev/null 2>&1 &&
-      [ "$(docker inspect --format="{{.State.Health.Status}}" ai-devops-assistant)" = "healthy" ]; do
+until docker ps --format "{{.Names}}" | grep -qx "ai-devops-assistant"; do
+    sleep 2
+done
+'
+
+echo "Container started."
+
+echo "===== Waiting for container health ====="
+
+timeout 180 bash -c '
+until [ "$(docker inspect --format "{{.State.Health.Status}}" ai-devops-assistant)" = "healthy" ]; do
+    echo "Waiting for healthy status..."
     sleep 5
 done
 '
 
+echo "Container is healthy."
+
 echo "===== Running containers ====="
 
 docker compose \
-    --env-file .env \
-    -f deployment/docker-compose.yml \
+    --env-file "$ENV_FILE" \
+    -f "$COMPOSE_FILE" \
     ps
 
-echo "===== Running Docker containers ====="
+echo "===== Docker containers ====="
 
-docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
+docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
 
-echo "===== Verifying application ====="
+echo "===== Verifying backend ====="
 
-curl --fail --silent http://localhost:8000/health
-
-curl --fail --silent https://deepakkine.online/health || true
+curl --fail --silent --show-error http://localhost:8000/health
 
 echo
-echo "Application health check passed."
+echo "✓ Local backend health check passed."
+
+if curl --fail --silent --show-error https://deepakkine.online/health >/dev/null; then
+    echo "✓ Public endpoint is healthy."
+else
+    echo "⚠ Public endpoint not yet reachable (continuing)."
+fi
 
 echo "===== Final cleanup ====="
 
-docker image prune -af
+docker image prune -f
 docker builder prune -f
 
 echo "===== Disk usage after deployment ====="
