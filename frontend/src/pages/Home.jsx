@@ -926,7 +926,7 @@ Include:
         <header className="border-b border-slate-300 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-              AI DevOps Assistant
+              AI DevOps Assistant 🚀
             </h1>
 
             <ThemeToggle />

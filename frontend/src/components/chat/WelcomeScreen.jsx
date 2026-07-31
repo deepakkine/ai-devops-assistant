@@ -15,7 +15,7 @@ export default function WelcomeScreen({ onPromptClick = () => {} }) {
       </div>
 
       <h1 className="mb-3 text-4xl font-bold text-slate-900 dark:text-white">
-        AI DevOps Assistant
+        AI DevOps Assistant 🚀
       </h1>
 
       <p className="mb-10 max-w-2xl text-slate-600 dark:text-slate-400">
