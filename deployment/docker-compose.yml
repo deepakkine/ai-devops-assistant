@@ -12,6 +12,9 @@ services:
     env_file:
       - ../.env
 
+    environment:
+      ALLOWED_ORIGINS: "http://localhost:5173,https://ai-devops-assistant-two.vercel.app,https://deepakkine.online,https://www.deepakkine.online"
+
     volumes:
       - chromadb_data:/app/storage/chromadb
       - huggingface_cache:/root/.cache/huggingface
