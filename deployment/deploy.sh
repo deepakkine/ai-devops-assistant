@@ -9,8 +9,8 @@ PROJECT_DIR="/home/ubuntu/ai-devops-assistant"
 COMPOSE_FILE="deployment/docker-compose.yml"
 ENV_FILE=".env"
 
-AWS_REGION="ap-south-1"
-AWS_ACCOUNT_ID="848504403730"
+: "${AWS_REGION:?AWS_REGION is required}"
+: "${AWS_ACCOUNT_ID:?AWS_ACCOUNT_ID is required}"
 
 cd "$PROJECT_DIR"
 

@@ -142,6 +142,8 @@ jobs:
                 "echo \"GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}\" >> .env",
                 "echo \"PORT=8000\" >> .env",
                 "[ -x deployment/deploy.sh ] || chmod +x deployment/deploy.sh",
+                "export AWS_REGION=${{ env.AWS_REGION }}",
+                "export AWS_ACCOUNT_ID=${{ env.AWS_ACCOUNT_ID }}",
                 "bash deployment/deploy.sh"
               ]
             }' \
